@@ -114,33 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.lineWidth = 2;
             ctx.stroke();
             
-            // Add category indicator
-            ctx.beginPath();
-            const categoryIndicatorSize = size * 0.4;
-            ctx.arc(node.x + size * 0.7, node.y - size * 0.7, categoryIndicatorSize, 0, 2 * Math.PI);
-            
-            // Set indicator color based on category
-            switch(node.category) {
-                case 'Application':
-                    ctx.fillStyle = '#ff5722'; // Orange
-                    break;
-                case 'Module':
-                    ctx.fillStyle = '#2196f3'; // Blue
-                    break;
-                case 'Service':
-                    ctx.fillStyle = '#9c27b0'; // Purple
-                    break;
-                case 'Tool':
-                    ctx.fillStyle = '#4caf50'; // Green
-                    break;
-                default:
-                    ctx.fillStyle = '#607d8b'; // Gray
-            }
-            ctx.fill();
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            
             // Draw border for main app
             if (node.id === 'main_app') {
                 ctx.beginPath();
