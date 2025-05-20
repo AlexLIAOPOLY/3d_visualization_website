@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lithography APP System Visualization</title>
-    <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="icons/main-app.svg" type="image/svg+xml">
     <style>
         body {
             margin: 0;
@@ -33,6 +33,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(0, 0, 0, 0.1);
+            max-width: calc(100% - 40px);
         }
         #reset-camera {
             background: #0072ce;
@@ -49,21 +50,6 @@
             background: #00a3e0;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        #highlight-group, #filter-category {
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            background: white;
-            min-width: 160px;
-            font-size: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-        }
-        #highlight-group:focus, #filter-category:focus {
-            outline: none;
-            border-color: #0072ce;
-            box-shadow: 0 0 0 3px rgba(0, 114, 206, 0.2);
         }
         .view-toggle {
             display: flex;
@@ -150,6 +136,8 @@
             font-size: 20px;
             border: 1px solid rgba(0, 0, 0, 0.1);
             letter-spacing: 0.5px;
+            text-align: center;
+            max-width: 90%;
         }
         .node-details-panel {
             position: fixed;
@@ -165,6 +153,7 @@
             transform: translateX(350px);
             opacity: 0;
             border: 1px solid rgba(0, 0, 0, 0.1);
+            max-width: calc(100% - 40px);
         }
         .node-details-panel.visible {
             transform: translateX(0);
@@ -327,6 +316,55 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 16px;
+                padding: 10px 15px;
+                top: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+                padding: 12px;
+                top: 60px;
+                left: 10px;
+                max-width: calc(100% - 20px);
+            }
+            
+            #reset-camera {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            
+            .view-toggle button, .zoom-controls button {
+                padding: 6px 10px;
+                font-size: 14px;
+            }
+            
+            .legend-panel {
+                bottom: 70px;
+                right: 10px;
+                font-size: 12px;
+                padding: 10px;
+                max-width: 200px;
+            }
+            
+            .toggle-legend {
+                bottom: 10px;
+                right: 10px;
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+            
+            .node-details-panel {
+                width: calc(100% - 40px);
+                top: 60px;
+                padding: 15px;
+            }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -341,27 +379,6 @@
     <div id="visualization">
         <div class="controls">
             <button id="reset-camera">Reset View</button>
-            <select id="highlight-group">
-                <option value="">Show All</option>
-                <option value="core">Core Applications</option>
-                <option value="simulation">Simulation Features</option>
-                <option value="analysis">Analysis Tools</option>
-                <option value="service">Service Features</option>
-                <option value="auxiliary">Auxiliary Tools</option>
-                <option value="ai">AI Tools</option>
-            </select>
-            <select id="filter-category">
-                <option value="">All Categories</option>
-                <option value="application">Applications</option>
-                <option value="module">Modules</option>
-                <option value="tool">Tools</option>
-                <option value="service">Services</option>
-                <option value="ai">AI Components</option>
-                <option value="data">Data Components</option>
-                <option value="library">Libraries</option>
-                <option value="interface">Interfaces</option>
-                <option value="hardware">Hardware</option>
-            </select>
             <label><input type="checkbox" id="show-labels" checked> Show Labels</label>
             <div class="zoom-controls">
                 <button id="zoom-in" title="Zoom In">+</button>
@@ -383,70 +400,46 @@
         <div id="legend-panel" class="legend-panel">
             <h4>Component Legend</h4>
             <div class="legend-section">
-                <div style="margin-bottom: 10px; font-weight: 600; border-bottom: 1px solid #eee; padding-bottom: 5px;">By Group:</div>
+                <div style="margin-bottom: 10px; font-weight: 600; border-bottom: 1px solid #eee; padding-bottom: 5px;">By Sphere Size:</div>
                 <div class="legend-category">
-                    <div class="legend-color" style="background-color: #0072ce;"></div>
-                    <span>Core Applications</span>
+                    <div class="legend-color" style="background-color: #ff6b00; width: 20px; height: 20px;"></div>
+                    <span>Large Spheres (2)</span>
                 </div>
                 <div class="legend-category">
-                    <div class="legend-color" style="background-color: #00a3e0;"></div>
-                    <span>Simulation Features</span>
+                    <div class="legend-color" style="background-color: #0072ce; width: 16px; height: 16px;"></div>
+                    <span>Medium Spheres (3)</span>
                 </div>
                 <div class="legend-category">
-                    <div class="legend-color" style="background-color: #ff6b00;"></div>
-                    <span>Analysis Tools</span>
-                </div>
-                <div class="legend-category">
-                    <div class="legend-color" style="background-color: #c7008e;"></div>
-                    <span>Service Components</span>
-                </div>
-                <div class="legend-category">
-                    <div class="legend-color" style="background-color: #71cb2d;"></div>
-                    <span>Auxiliary Tools</span>
-                </div>
-                <div class="legend-category">
-                    <div class="legend-color" style="background-color: #9c27b0;"></div>
-                    <span>AI Tools</span>
+                    <div class="legend-color" style="background-color: #71cb2d; width: 12px; height: 12px;"></div>
+                    <span>Small Spheres (Tools)</span>
                 </div>
             </div>
             
             <div class="legend-section" style="margin-top: 15px;">
-                <div style="margin-bottom: 10px; font-weight: 600; border-bottom: 1px solid #eee; padding-bottom: 5px;">By Category:</div>
+                <div style="margin-bottom: 10px; font-weight: 600; border-bottom: 1px solid #eee; padding-bottom: 5px;">By Type:</div>
                 <div class="legend-category">
                     <div class="legend-indicator" style="background-color: #ff5722;"></div>
-                    <span>Application</span>
+                    <span>Simulation</span>
                 </div>
                 <div class="legend-category">
                     <div class="legend-indicator" style="background-color: #2196f3;"></div>
-                    <span>Module</span>
+                    <span>OPC Example</span>
                 </div>
                 <div class="legend-category">
                     <div class="legend-indicator" style="background-color: #9c27b0;"></div>
-                    <span>Service</span>
+                    <span>Height Profile Generator</span>
                 </div>
                 <div class="legend-category">
                     <div class="legend-indicator" style="background-color: #4caf50;"></div>
-                    <span>Tool</span>
+                    <span>APP Client Service</span>
                 </div>
                 <div class="legend-category">
                     <div class="legend-indicator" style="background-color: #ff9800;"></div>
-                    <span>AI</span>
+                    <span>CC3 Curve Generator</span>
                 </div>
                 <div class="legend-category">
                     <div class="legend-indicator" style="background-color: #03a9f4;"></div>
-                    <span>Data</span>
-                </div>
-                <div class="legend-category">
-                    <div class="legend-indicator" style="background-color: #795548;"></div>
-                    <span>Library</span>
-                </div>
-                <div class="legend-category">
-                    <div class="legend-indicator" style="background-color: #607d8b;"></div>
-                    <span>Interface</span>
-                </div>
-                <div class="legend-category">
-                    <div class="legend-indicator" style="background-color: #f44336;"></div>
-                    <span>Hardware</span>
+                    <span>Tool Components</span>
                 </div>
             </div>
             
@@ -463,6 +456,8 @@
             </div>
         </div>
     </div>
+
+    <div id="node-tooltip-3d-dynamic" style="position: absolute; display: none; padding: 12px 15px; background-color: rgba(0, 0, 0, 0.9); color: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); font-size: 16px; font-weight: bold; pointer-events: none; z-index: 1000; max-width: 300px; border: 2px solid white; transition: opacity 0.2s ease;"></div>
 
     <script src="data.js"></script>
     <script src="visualization.js"></script>
