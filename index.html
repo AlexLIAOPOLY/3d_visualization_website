@@ -351,6 +351,12 @@
                 width: 300px;
                 box-shadow: 0 6px 20px rgba(0,0,0,0.2);
                 z-index: 1000;
+                position: relative;
+                padding-top: 35px;
+            }
+            
+            .mobile-legend-close {
+                display: flex;
             }
             
             .toggle-legend {
@@ -479,6 +485,34 @@
             color: white;
             border-color: #005c9a;
         }
+
+        /* Mobile legend close button - new style */
+        .mobile-legend-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 26px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            display: none; /* Hidden by default, shown in mobile view */
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-legend-close:hover {
+            background: white;
+            color: #333;
+            transform: scale(1.1);
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -569,6 +603,8 @@
                 <div>• L: Toggle legend</div>
             </div>
         </div>
+        <!-- Mobile legend close button -->
+        <div class="mobile-legend-close" id="mobile-legend-close">&times;</div>
     </div>
 
     <div id="node-tooltip-3d-dynamic" style="position: absolute; display: none; padding: 12px 15px; background-color: rgba(0, 0, 0, 0.9); color: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); font-size: 16px; font-weight: bold; pointer-events: none; z-index: 1000; max-width: 300px; border: 2px solid white; transition: opacity 0.2s ease;"></div>
@@ -625,6 +661,7 @@
         const mobileToggleLegendBtn = document.getElementById('mobile-toggle-legend');
         const originalToggleLegendBtn = document.getElementById('toggle-legend');
         const legendPanel = document.getElementById('legend-panel');
+        const mobileLegendCloseBtn = document.getElementById('mobile-legend-close');
 
         if (mobileMenuBtn && mobileSidebar && closeSidebarBtn) {
             mobileMenuBtn.addEventListener('click', (e) => {
@@ -775,6 +812,17 @@
             if(originalToggleLegendBtn){
                 originalButtonObserver.observe(originalToggleLegendBtn, {characterData: true, childList:true, subtree: true});
             }
+        }
+
+        // Mobile legend close button logic
+        if (mobileLegendCloseBtn && legendPanel && originalToggleLegendBtn) {
+            mobileLegendCloseBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent any bubble up
+                // If legend is visible, hide it by simulating a click on the original toggle button
+                if (legendPanel.classList.contains('visible')) {
+                    originalToggleLegendBtn.click();
+                }
+            });
         }
     });
     </script>
