@@ -326,12 +326,7 @@
             }
             
             .controls {
-                flex-direction: column;
-                gap: 10px;
-                padding: 12px;
-                top: 60px;
-                left: 10px;
-                max-width: calc(100% - 20px);
+                display: none !important;
             }
             
             #reset-camera {
@@ -364,6 +359,120 @@
                 top: 60px;
                 padding: 15px;
             }
+        }
+
+        /* Mobile Menu Styles */
+        .mobile-menu-button {
+            display: none; /* Hidden by default, shown in media query */
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1002;
+            background-color: #0072ce;
+            color: white;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 24px; /* Larger icon */
+            line-height: 1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            transition: background-color 0.3s ease;
+        }
+        .mobile-menu-button:hover {
+            background-color: #005c9a;
+        }
+
+        .mobile-sidebar {
+            display: none; /* Hidden by default, shown as flex in media query */
+            position: fixed;
+            top: 0;
+            right: -280px; /* Start off-screen, width is 250px + 2*padding */
+            width: 250px;
+            height: 100vh;
+            background-color: rgba(255, 255, 255, 0.98);
+            box-shadow: -3px 0 15px rgba(0,0,0,0.15);
+            z-index: 1001;
+            padding: 20px;
+            transition: right 0.3s ease-in-out;
+            overflow-y: auto;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .mobile-sidebar.open {
+            right: 0;
+        }
+
+        .mobile-sidebar h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .mobile-sidebar .close-sidebar-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #555;
+            padding: 5px;
+            line-height: 1;
+        }
+        .mobile-sidebar .close-sidebar-button:hover {
+            color: #000;
+        }
+
+        .mobile-sidebar button,
+        .mobile-sidebar .mobile-control-label { /* Use a class for the label */
+            width: 100%;
+            padding: 12px 15px;
+            text-align: left;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .mobile-sidebar button:hover,
+        .mobile-sidebar .mobile-control-label:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .mobile-sidebar .mobile-control-label {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between checkbox and text */
+        }
+
+        .mobile-sidebar input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .mobile-sidebar .mobile-controls-group { /* Wrapper for zoom and view toggle */
+            display: flex;
+            gap: 10px;
+        }
+
+        .mobile-sidebar .mobile-controls-group button {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .mobile-sidebar .mobile-controls-group button.active {
+            background-color: #0072ce;
+            color: white;
+            border-color: #005c9a;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -459,8 +568,158 @@
 
     <div id="node-tooltip-3d-dynamic" style="position: absolute; display: none; padding: 12px 15px; background-color: rgba(0, 0, 0, 0.9); color: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); font-size: 16px; font-weight: bold; pointer-events: none; z-index: 1000; max-width: 300px; border: 2px solid white; transition: opacity 0.2s ease;"></div>
 
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn">☰</button>
+
+    <!-- Mobile Controls Sidebar -->
+    <div id="mobile-controls-sidebar">
+        <button id="close-mobile-sidebar-btn">&times;</button>
+        <h4>Controls</h4>
+        <button id="mobile-reset-camera">Reset View</button>
+        <label class="mobile-control-label">
+            <input type="checkbox" id="mobile-show-labels"> Show Labels
+        </label>
+        <div class="mobile-controls-group">
+            <button id="mobile-zoom-in" title="Zoom In">+</button>
+            <button id="mobile-zoom-out" title="Zoom Out">−</button>
+        </div>
+        <div class="mobile-controls-group">
+            <button id="mobile-view-3d">3D View</button>
+            <button id="mobile-view-2d">2D View</button>
+        </div>
+    </div>
+
     <script src="data.js"></script>
     <script src="visualization.js"></script>
     <script src="translations.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileSidebar = document.getElementById('mobile-controls-sidebar');
+        const closeSidebarBtn = document.getElementById('close-mobile-sidebar-btn');
+
+        // Original controls (for event delegation and state sync)
+        const originalResetCamera = document.getElementById('reset-camera');
+        const originalShowLabels = document.getElementById('show-labels');
+        const originalZoomIn = document.getElementById('zoom-in');
+        const originalZoomOut = document.getElementById('zoom-out');
+        const originalView3D = document.getElementById('view-3d');
+        const originalView2D = document.getElementById('view-2d');
+
+        // Mobile controls
+        const mobileResetCamera = document.getElementById('mobile-reset-camera');
+        const mobileShowLabels = document.getElementById('mobile-show-labels');
+        const mobileZoomIn = document.getElementById('mobile-zoom-in');
+        const mobileZoomOut = document.getElementById('mobile-zoom-out');
+        const mobileView3D = document.getElementById('mobile-view-3d');
+        const mobileView2D = document.getElementById('mobile-view-2d');
+
+        if (mobileMenuBtn && mobileSidebar && closeSidebarBtn) {
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent click from bubbling to document
+                mobileSidebar.classList.add('open');
+            });
+
+            closeSidebarBtn.addEventListener('click', () => {
+                mobileSidebar.classList.remove('open');
+            });
+            
+            // Close sidebar if user clicks outside of it
+            document.addEventListener('click', (event) => {
+                if (mobileSidebar.classList.contains('open') && 
+                    !mobileSidebar.contains(event.target) && 
+                    event.target !== mobileMenuBtn) { // also check if the click was on the menu button itself
+                    mobileSidebar.classList.remove('open');
+                }
+            });
+            // Prevent clicks inside the sidebar from closing it via the document listener
+            mobileSidebar.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+
+        // --- Event delegation and state synchronization ---
+
+        if (mobileResetCamera && originalResetCamera) {
+            mobileResetCamera.addEventListener('click', () => {
+                originalResetCamera.click();
+                if (mobileSidebar) mobileSidebar.classList.remove('open');
+            });
+        }
+
+        if (mobileShowLabels && originalShowLabels) {
+            // Initial sync
+            if (originalShowLabels) mobileShowLabels.checked = originalShowLabels.checked;
+            
+            mobileShowLabels.addEventListener('change', () => {
+                if (originalShowLabels) {
+                    originalShowLabels.checked = mobileShowLabels.checked;
+                    originalShowLabels.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+            if (originalShowLabels) {
+                 originalShowLabels.addEventListener('change', () => {
+                    mobileShowLabels.checked = originalShowLabels.checked;
+                });
+            }
+        }
+
+        if (mobileZoomIn && originalZoomIn) {
+            mobileZoomIn.addEventListener('click', () => {
+                originalZoomIn.click();
+            });
+        }
+
+        if (mobileZoomOut && originalZoomOut) {
+            mobileZoomOut.addEventListener('click', () => {
+                originalZoomOut.click();
+            });
+        }
+        
+        const syncViewButtonsState = () => {
+            if (!originalView3D || !originalView2D || !mobileView3D || !mobileView2D) return;
+            if (originalView3D.classList.contains('active')) {
+                mobileView3D.classList.add('active');
+                mobileView2D.classList.remove('active');
+            } else {
+                mobileView3D.classList.remove('active');
+                mobileView2D.classList.add('active');
+            }
+        };
+
+        if (mobileView3D && originalView3D) {
+            mobileView3D.addEventListener('click', () => {
+                if (!originalView3D.classList.contains('active')) {
+                    originalView3D.click(); // This should trigger the observer
+                }
+            });
+        }
+
+        if (mobileView2D && originalView2D) {
+            mobileView2D.addEventListener('click', () => {
+                if (!originalView2D.classList.contains('active')) {
+                    originalView2D.click(); // This should trigger the observer
+                }
+            });
+        }
+        
+        if (originalView3D && originalView2D) {
+            syncViewButtonsState(); // Initial sync
+            
+            const observerCallback = (mutationsList, observer) => {
+                for(let mutation of mutationsList) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        syncViewButtonsState();
+                        break; 
+                    }
+                }
+            };
+            const observer = new MutationObserver(observerCallback);
+            observer.observe(originalView3D, { attributes: true, attributeFilter: ['class'] });
+            observer.observe(originalView2D, { attributes: true, attributeFilter: ['class'] });
+        }
+    });
+    </script>
 </body>
 </html> 
