@@ -340,16 +340,21 @@
             }
             
             .legend-panel {
-                bottom: 70px;
-                right: 10px;
-                font-size: 12px;
-                padding: 10px;
-                max-width: 200px;
+                bottom: auto;
+                top: 60px;
+                left: 50%;
+                transform: translateX(-50%);
+                right: auto;
+                font-size: 13px;
+                padding: 12px;
+                max-width: calc(100% - 30px);
+                width: 300px;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+                z-index: 1000;
             }
             
             .toggle-legend {
-                bottom: 10px;
-                right: 10px;
+                display: none !important;
                 font-size: 14px;
                 padding: 6px 12px;
             }
@@ -587,6 +592,7 @@
             <button id="mobile-view-3d">3D View</button>
             <button id="mobile-view-2d">2D View</button>
         </div>
+        <button id="mobile-toggle-legend">Show Legend</button>
     </div>
 
     <script src="data.js"></script>
@@ -614,6 +620,11 @@
         const mobileZoomOut = document.getElementById('mobile-zoom-out');
         const mobileView3D = document.getElementById('mobile-view-3d');
         const mobileView2D = document.getElementById('mobile-view-2d');
+
+        // Legend related elements
+        const mobileToggleLegendBtn = document.getElementById('mobile-toggle-legend');
+        const originalToggleLegendBtn = document.getElementById('toggle-legend');
+        const legendPanel = document.getElementById('legend-panel');
 
         if (mobileMenuBtn && mobileSidebar && closeSidebarBtn) {
             mobileMenuBtn.addEventListener('click', (e) => {
@@ -718,6 +729,52 @@
             const observer = new MutationObserver(observerCallback);
             observer.observe(originalView3D, { attributes: true, attributeFilter: ['class'] });
             observer.observe(originalView2D, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        // --- Legend Toggle Logic for Mobile Sidebar ---
+        if (mobileToggleLegendBtn && originalToggleLegendBtn && legendPanel) {
+            // Function to update mobile button text based on legend visibility
+            const updateMobileLegendButtonText = () => {
+                if (legendPanel.classList.contains('visible')) {
+                    mobileToggleLegendBtn.textContent = 'Hide Legend';
+                } else {
+                    mobileToggleLegendBtn.textContent = 'Show Legend';
+                }
+            };
+
+            // Initial sync for mobile legend button text
+            updateMobileLegendButtonText();
+
+            mobileToggleLegendBtn.addEventListener('click', () => {
+                originalToggleLegendBtn.click(); // Trigger original button's logic
+                // The original button's click handler should update its own text and toggle 'visible' class
+                // Then we sync our mobile button's text.
+                // Small delay to ensure original script has updated the class and text
+                setTimeout(updateMobileLegendButtonText, 50); 
+                // if (mobileSidebar) mobileSidebar.classList.remove('open'); // Optionally close sidebar
+            });
+
+            // Observe the original legend panel for class changes to keep mobile button text in sync
+            // This is in case the legend is toggled by other means (e.g., 'L' key)
+            const legendObserver = new MutationObserver(() => {
+                updateMobileLegendButtonText();
+                // Also sync original toggle button text if it exists and is different
+                if(originalToggleLegendBtn.textContent !== mobileToggleLegendBtn.textContent){
+                     if(legendPanel.classList.contains('visible')){
+                         originalToggleLegendBtn.textContent = 'Hide Legend';
+                     } else {
+                         originalToggleLegendBtn.textContent = 'Show Legend';
+                     }
+                }
+            });
+            legendObserver.observe(legendPanel, { attributes: true, attributeFilter: ['class'] });
+             // Also observe the original toggle legend button's text content if it changes by other means.
+            const originalButtonObserver = new MutationObserver(() => {
+                 updateMobileLegendButtonText();
+            });
+            if(originalToggleLegendBtn){
+                originalButtonObserver.observe(originalToggleLegendBtn, {characterData: true, childList:true, subtree: true});
+            }
         }
     });
     </script>
